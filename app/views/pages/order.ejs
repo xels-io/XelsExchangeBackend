@@ -1,0 +1,97 @@
+<%- include('../layout/header'); -%>
+<div class="container container-body">
+    <div class="brand">
+        <h1 class="margin-bottom-min text">SELS To XELS Exchange Site</h1>
+        <h3 class="detail-text">Simple &nbsp;.&nbsp; Secure &nbsp;.&nbsp; Transparent</h3>
+    </div>
+    <% if(typeof order != 'undefined'){%>
+    <div class="content-wrapper">
+        <div class="">
+            <div class="row">
+                <div class="col-lg-6 col-md-12">
+                    <div class="diposit address-block" deposit_currency="BCH" deposit_address="1LGDhwfwJ5hbf1NcSmHN4PLvuPNrCzjzBL" st="1" rc="P69SBITCXDL8184">
+                        <p class="order-highlight">Deposit <%- order.eth_token_amount %> SELS TOKEN</p>
+                        <p class="address"><%- order.eth_address %></p>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-12">
+                    <div class="receive address-block">
+                        <p class="order-highlight">Receive <%- order.xels_amount %> XELS COIN</p>
+                        <p class="address"><%- order.xels_address %></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="">
+            <div class="row">
+                <div class="col-md-3 center eq-height barcode">
+                    <img src="https://chart.googleapis.com/chart?cht=qr&amp;chs=300x300&amp;chl=ethereum%3A<%- order.eth_address %>%3Famount%3D<%- order.eth_token_amount %>&amp;choe=UTF-8&amp;chld=L|4">
+                </div>
+                <div class="col-md-9 eq-height">
+
+                    <div class="send copy">
+                        <h3 class="exchange-id"><b>Exchange ID: <span id="orderno"><%- order.order_no %></span></b></h3>
+                        <p>Send <b class="order-highlight"><%- order.eth_token_amount %> SELS</b> to the address </p>
+                        <p class="address order-highlight m-0"><b id="copy-text"><%- order.eth_address %></b></p>
+
+                        <div>
+                            <span class="btn btn-success btn-copy mt-2" data-toggle="tooltip" data-copy="#copy-text" data-placement="right" title="" data-original-title="Copy to clipboard">Copy the address</span>
+                        </div>
+                        <div class="payment-status mt-2">
+
+                            <div class="status status-1 <%- (order.status==1)?'':'hide' %>">
+                                <i class="fa fa-eye" aria-hidden="true"></i>
+                                Deposit Successfullly Received
+                            </div>
+
+                            <div class="status status-0 text-danger <%- (order.status==0)?'':'hide' %>">
+                                <i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>
+                                Waiting for Payment
+                            </div>
+
+                            <div class="status status-2 text-primary <%- (order.status==2)?'':'hide' %>">
+                                <i class="fa fa-circle" aria-hidden="true"></i>
+                                <%- order.xels_amount %> Xels sent to <%- order.xels_address %>
+                            </div>
+                            <div class="status status-3 text-success <%- (order.status==3)?'':'hide' %>">
+                                <i class="fa fa-check" aria-hidden="true"></i>
+                                <%- order.xels_amount %> Xels sent to <%- order.xels_address %> (Complete)
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <% }else{%>
+    <div  class="content-wrapper">
+        <form>
+            <div class="col-12">
+                <% if(typeof error != 'undefined' && error.message){%>
+                    <div class="text-center error"><%- error.message %></div>
+                <%}%>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="Exchange ID / eid" name="eid">
+                    <div class="input-group-append">
+                        <button class="btn btn-success btn-custom" type="submit">Get</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <% }%>
+</div>
+<script>
+    $(function () {
+        var host = window.location.origin;
+        setInterval(function(){
+            $.get(host+'/api/v1/getOrder/'+$('#orderno').text(),function (order) {
+                $('.status').addClass('hide');
+                $('.status-'+order.status).removeClass('hide');
+            },'json')
+        },10*1000)
+    })
+</script>
+<%- include('../layout/footer'); -%>

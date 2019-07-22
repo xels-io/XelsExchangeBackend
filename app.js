@@ -1,147 +1,131 @@
-const express = require("express"),
-      cors = require("cors"),
-      app = express(),
-      bodyParser = require("body-parser"),
-      bcrypt = require('bcrypt');
-      const port = 5000;
-      var connection = require('./config/config');
-const saltRounds = 10;
-app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-var idRows ;
-const registerController = require('./controllers/register');
-const authController = require('./controllers/authenticate');
-const cryption = require('./controllers/encryptdecrypt');
 
-function encryptData (pvt)
-{
-  let m = cryption.encrypt(pvt);
-  return m;
+//const bodyParser = require('body-parser');
+require('./system/require');
+
+
+app.use(session({
+    secret: 'set',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 1000*60*60*2,
+        sameSite:true
+    }
+}));
+
+let httpsPort = 443;
+let httpPort = 80;
+// configure the app for post request data convert to json
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+
+
+//ssl certificate setup
+const http = require('http');
+const fs = require('fs');
+const https = require('https');
+
+//import ssl certificate
+const httpsOptions = {
+    cert: fs.readFileSync(path.join(__dirname, 'ssl_certificate', 'xels_io.crt')),
+    ca: fs.readFileSync(path.join(__dirname, 'ssl_certificate', 'xels_io.ca-bundle')),
+    key: fs.readFileSync(path.join(__dirname, 'ssl_certificate', 'xels_io_private_key.key'))
+  }
+
+//view config
+app.set('view engine','ejs');
+app.set('views', path.join(__dirname, 'app/views'));
+app.use(express.static(__dirname+"/assets"));
+// end view config
+
+
+
+//Every route middleware
+app.use(function (req, res, next) {
+
+    if(req.protocol === 'http')
+    {
+        res.redirect(301, `https://${req.headers.host}${req.url}`);
+    }
+    if(req.headers.host = '52.68.239.4')
+    {
+        res.redirect(301, `https://exchange.xels.io${req.url}`);
+    }
+   else
+   {
+     res.header("Access-Control-Allow-Origin", "*");
+     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, X-Assassin-RequestHash");
+     global.Request = req;
+     global.Response = res;
+     next();
+   }
+   
+});
+
+
+/*
+    Routes
+*/
+
+app.use('/api/v1', ApiRoute); //route prefix(api/v1) is added
+app.use('/',WebRoute);
+
+//Didn't match any route then it'll be executed
+app.use(function (req, res) {
+    res.render('errors/404');
+});
+
+/*
+    Routes
+*/
+
+//create httpsServer
+const httpsServer = https.createServer(httpsOptions,app);
+
+ 
+
+ httpsServer.listen(httpsPort,()=>{
+    console.log(`Listening on port: ${httpsPort}`);
+    const Exchange = require('./app/controllers/exchange');
+    const exchange = new Exchange();
+    setInterval(function () {
+        exchange.received();
+    },3*60*1000)
+    setInterval(function () {
+        exchange.sendXels();
+    },10*60*1000)
+    setInterval(function () {
+        exchange.confirmedSendingXels();
+    },20*60*1000)
+
+
+});
+
+var server = http.createServer((req, res) => {
+    // console.log(req.headers);
+    res.writeHead(301,{Location: `https://${req.headers.host}${req.url}`});
+   res.end();
+ });
+ 
+server.listen(httpPort);
+
+
+if(globalConfig.socket==true){
+    const socket = require('socket.io');
+
+    const io = socket(server);
+    global.IO = io;
+
+    io.on('connection',function(socket){
+        global.SOCKET = socket;
+        console.log('Socket Connected.connected-id: '+socket.id);
+
+        socket.on('disconnect',function(data){
+            console.log('Disconnected id: '+data);
+        })
+    });
 }
 
-app.post('/saveTransaction', (req,res) => {
-    let encrypt = encryptData(req.body.ethPvt);
-    //console.log(req.body.tid);
-    let insertTransaction = "INSERT INTO xelschangedetails(xels_address, eth_address, eth_pvt, xels_amount, eth_amount,transactionID, status ) values ('" + req.body.xelsAddress +"', '" + req.body.ethAddress +"', '" + JSON.stringify(encrypt) +"','" + req.body.xelsAmount +"','" + req.body.ethAmount +"','" + req.body.tid +"', 0)";
-    connection.query(insertTransaction , (err, rows) => {
-      if(err)
-      {
-        res.json({
-          status:false,
-          message: err
-      });
-      }
-      else {
-        idRows = rows.insertId;
-        res.json({
-          status:true,
-          message: "Transaction Saved",
-          data: idRows
-      });
-      }
-    })
-});
 
-app.post('/updateTransaction',  (req, res) => {
-    let updateTransaction = "UPDATE xelschangedetails set status = 1 WHERE id='"+ idRows +"'" ;
-     connection.query(updateTransaction , (err, rows) => {
-      if(err)
-      {
-        res.json({
-          status:false,
-          message: err
-      });
-      }
-      else {
-        res.json({
-          status:true,
-          message: "Transaction Updated"
-      });
-      }
-    })
-})
-app.get('/', (req,res) => {
-
-});
-//register: storing name, email and password and redirecting to login page after signup
-// app.post('/user/create',  (req, res) => {
-//   bcrypt.hash(req.body.passwordsignup, saltRounds, function (err,   hash) {
-//   connection.User.create({
-//    name: req.body.usernamesignup,
-//    email: req.body.emailsignup,
-//    password: hash
-//    }).then(function(data) {
-//     if (data) {
-//     res.redirect('/login');
-//     }
-//   });
-//  });
-// });
-
-
-app.post('/register',  registerController.register);
-app.post('/login', authController.login );
-
-function isLoggedIn(req, res, next) {
-  if (req.isAuthenticated()) {
-
-      return next();
-  }
-  req['header']['Referrer']=req.url
-  console.log( req['header']['Referrer'])
-  res.redirect('/login');
-}
-app.post('/auth', (request, response) => {
-	var username = request.body.username;
-	var password = request.body.password;
-	if (username && password) {
-		connection.query('SELECT * FROM user WHERE username = ? AND password = ?', [username, password], function(error, results, fields) {
-			if (results.length > 0) {
-				request.session.loggedin = true;
-				request.session.username = username;
-				response.redirect('/home');
-			} else {
-				response.send('Incorrect Username and/or Password!');
-			}
-			response.end();
-		});
-	} else {
-		response.send('Please enter Username and Password!');
-		response.end();
-	}
-});
-
-//login page: storing and comparing email and password,and redirecting to home page after login
-app.post('/user', function (req, res) {
-  db.User.findOne({
-       where: {
-           email: req.body.email
-              }
-  }).then(function (user) {
-      if (!user) {
-         res.redirect('/');
-      } else {
-      bcrypt.compare(req.body.password, user.password, function (err, result) {
-          if (result == true) {
-              res.redirect('/home');
-          } else {
-            res.send('Incorrect password');
-            res.redirect('/');
-          }
-        });
-  }
-});
-});
-
-// set the app to listen on the port
-app.listen(port, () => {
-  console.log(`Server running on port: ${port}`);
-});
-
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
-
+//http.createServer(app).listen(port,env.ip);
+//app.listen(port,env.ip, ()=>{console.log(`App listening on ${env.ip}:${port}...`)});

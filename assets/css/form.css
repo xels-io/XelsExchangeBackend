@@ -1,0 +1,70 @@
+span.input-group-text {
+    font-weight: bold;
+}
+.form-control{
+    background: #F1F1F1;
+    border:1px solid transparent;
+}
+.input-group-append>.input-group-text{
+    border:1px solid transparent;
+}
+.form-control:active,
+.form-control:focus,
+.form-control:focus ~ .input-group-append>.input-group-text{
+    outline: 0;
+    box-shadow: none;
+    border:1px solid #6DD162;
+}
+.input-group-text{
+    border: none;
+}
+.form-control,.btn{
+    -webkit-border-radius: 9px;
+    -moz-border-radius: 9px;
+    border-radius: 9px;
+    height: 62px;
+}
+@media (max-width: 991px) {
+    .form-control,.btn {
+        height: 48px;
+    }
+
+}
+.btn-custom{
+    font-style: normal;
+    font-weight: bold;
+    font-size: 18px;
+    line-height: 18px;
+    text-align: center;
+    color: #FFFFFF;
+    padding: 8px 20px;
+    background: #53B848;
+}
+
+@media (min-width: 992px) {
+    .btn-custom{
+        padding: 20px 40px;
+    }
+
+}
+.btn-copy{
+    font-weight: bold;
+    font-size: 16px;
+    text-align: center;
+    color: #FFFFFF;
+    padding: 5px 25px;
+    background: #53B848;
+    height: auto;
+}
+
+form .error {
+  color: #ff0000;
+}
+
+button.navbar-toggler.navbar-toggler-right {
+    color: #FFFFFF;
+    outline: none;
+}
+.navbar-brand svg{
+    height: 40px;
+}

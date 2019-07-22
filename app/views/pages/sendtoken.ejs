@@ -1,0 +1,25 @@
+<%- include('../layout/header'); -%>
+<div class="container">
+    <div class="brand">
+        <h1 class="margin-bottom-min text">Send Demo Token Ethereum(rinkyby)</h1>
+        <h3 class="detail-text">This only for testing purpose</h3>
+    </div>
+    <form class="send-token-form" action="/sendToken/test" method="POST">
+       
+        <div class="row">
+            <div class="col-md-6 col-12">
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Receiving Address" name="token_address" id="token_address">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="amount" name="amount" id="amount">
+                </div>
+            </div>
+        </div>
+        <div class="">
+            <button class="btn btn-success" type="submit">Submit</button>
+        </div>
+    </form>
+
+</div>
+<%- include('../layout/footer'); -%>

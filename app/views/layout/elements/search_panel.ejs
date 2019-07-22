@@ -1,0 +1,44 @@
+<fieldset class="fieldset">
+    <legend>
+        <p>Search Panel</p>
+    </legend>
+    <form class="">
+        <div class="row">
+            <div class="col-md-3">
+                Search</br>
+                <input type="text" class="form-control" name="search" placeholder="Search..." value="<%= Request.query.search %>">
+            </div>
+
+            <div class="col-md-3">
+                Status</br>
+                <select class="form-control" name="status">
+                    <option value="">Select Status</option>
+                    <%for(let k in address_status){%>
+                    <option value="<%= k; %>" <%=(Request.query.status==k)?'selected':''%>><%= address_status[k]; %></option>
+                    <%}%>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                Order by</br>
+                <select class="form-control" name="order_by">
+                    <option value="">Select Order By</option>
+                    <option <%=(Request.query.order_by=='amount,desc')?'selected':''%> value="amount,desc">Amount(Descending)</option>
+                    <option <%=(Request.query.order_by=='amount,asc')?'selected':''%> value="amount,asc">Amount(Ascending)</option>
+                </select>
+            </div>
+
+
+            <div class="col-md-3">
+                </br>
+                <button class="btn btn-primary">Submit</button>
+            </div>
+
+        </div>
+
+
+
+
+    </form>
+
+</fieldset>
