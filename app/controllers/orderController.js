@@ -20,16 +20,18 @@ module.exports = class homeController extends Controller {
             data.eth_pvt = wallet.private;
 
             OrderModel.db.insert(OrderModel.table,data,function (err,insert) {
-                let random = require("randomstring");
-                let order_no = random.generate(7)+insert.insertId;
-                OrderModel.db.update(OrderModel.table,{order_no},{id:insert.insertId},function (err,update) {
-                    Response.redirect('/track?eid='+order_no);
-                })
+                if(err){
+                    Response.send(err);
+                }else{
+                    let random = require("randomstring");
+                    let order_no = random.generate(7)+insert.insertId;
+                    OrderModel.db.update(OrderModel.table,{order_no},{id:insert.insertId},function (err,update) {
+                        Response.redirect('/track?eid='+order_no);
+                    })
+                }
+
             })
         })
-
-
-
 
     }
 
