@@ -28,9 +28,19 @@ exports.session_expired = 1*60*1000*60*12;//1 day
 exports.debug = (env.debug)?env.debug:true;
 
 /*
- @Application run in this port at the server
+ @Is application use https
 */
-exports.port = (env.port)?env.port:8000;
+exports.https = (env.https)?env.https:false;
+
+/*
+ @Application run in this port at http
+*/
+exports.httpPort = (env.httpPort)?env.httpPort:80;
+
+/*
+ @Application run in this port at https
+*/
+exports.httpsPort = (env.httpsPort)?env.httpsPort:443;
 
 
 /*

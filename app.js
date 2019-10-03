@@ -13,8 +13,8 @@ app.use(session({
     }
 }));
 
-let httpsPort = 443;
-let httpPort = 80;
+let httpsPort = globalConfig.httpsPort;
+let httpPort = globalConfig.httpPort;
 // configure the app for post request data convert to json
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -25,12 +25,7 @@ const http = require('http');
 const fs = require('fs');
 const https = require('https');
 
-//import ssl certificate
-const httpsOptions = {
-    cert: fs.readFileSync(path.join(__dirname, 'ssl_certificate', 'xels_io.crt')),
-    ca: fs.readFileSync(path.join(__dirname, 'ssl_certificate', 'xels_io.ca-bundle')),
-    key: fs.readFileSync(path.join(__dirname, 'ssl_certificate', 'xels_io_private_key.key'))
-  }
+
 
 //view config
 app.set('view engine','ejs');
@@ -46,10 +41,6 @@ app.use(function (req, res, next) {
     if(req.protocol === 'http')
     {
         res.redirect(301, `https://${req.headers.host}${req.url}`);
-    }
-    if(req.headers.host = '52.68.239.4')
-    {
-        res.redirect(301, `https://exchange.xels.io${req.url}`);
     }
    else
    {
@@ -80,34 +71,49 @@ app.use(function (req, res) {
 */
 
 //create httpsServer
-const httpsServer = https.createServer(httpsOptions,app);
+if(globalConfig.https){
 
- 
+    //import ssl certificate
+    const httpsOptions = {
+        cert: fs.readFileSync(path.join(__dirname, 'ssl_certificate', 'xels_io.crt')),
+        ca: fs.readFileSync(path.join(__dirname, 'ssl_certificate', 'xels_io.ca-bundle')),
+        key: fs.readFileSync(path.join(__dirname, 'ssl_certificate', 'xels_io_private_key.key'))
+    }
 
- httpsServer.listen(httpsPort,()=>{
-    console.log(`Listening on port: ${httpsPort}`);
-    const Exchange = require('./app/controllers/exchange');
-    const exchange = new Exchange();
-    setInterval(function () {
-        exchange.received();
-    },3*60*1000)
-    setInterval(function () {
-        exchange.sendXels();
-    },10*60*1000)
-    setInterval(function () {
-        exchange.confirmedSendingXels();
-    },20*60*1000)
+    const httpsServer = https.createServer(httpsOptions,app);
 
 
-});
+
+    httpsServer.listen(httpsPort,()=>{
+        console.log(`Listening on port(HTTPs): ${httpsPort}`);
+        const Exchange = require('./app/controllers/exchange');
+        const exchange = new Exchange();
+        setInterval(function () {
+            exchange.received();
+        },3*60*1000)
+        setInterval(function () {
+            exchange.sendXels();
+        },10*60*1000)
+        setInterval(function () {
+            exchange.confirmedSendingXels();
+        },20*60*1000)
+
+
+    });
+}
+
 
 var server = http.createServer((req, res) => {
     // console.log(req.headers);
-    res.writeHead(301,{Location: `https://${req.headers.host}${req.url}`});
-   res.end();
+    if(globalConfig.https){
+        res.writeHead(301,{Location: `https://${req.headers.host}${req.url}`});
+    }
+    res.end();
  });
  
-server.listen(httpPort);
+server.listen(httpPort,function () {
+    console.log(`Listening on port(HTTP): ${httpPort}`);
+});
 
 
 if(globalConfig.socket==true){
