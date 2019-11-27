@@ -60,5 +60,8 @@ controller = (controllerPath) => {
     return controller[split[split.length-1]];
 };
 
-RequestData = loadCore('request_data');
+loadValidator = (req,res) =>{
+    let validator = require(`../core/request_data`);
+    return new validator(req,res);
+};
 

@@ -15,56 +15,46 @@ const e = require('../config/errors');
 
 */
 
-class RequestData {
-    constructor() {
+module.exports = class RequestData {
+    constructor(Request,Response) {
         this.typeOfValue ='string';
         this.isRequired = false;
+        this.validation = {
+            'error':0,
+            'details':{}
+        }
+        this.value = '';
+        this.Request = Request;
+        this.Response = Response;
 
     }
-    get(key,isRequired=false){
+    get(key){
+        return this.Request.query[key];
+    }
+
+    params(key){
+        return this.Request.params[key];
+    }
+    post(key,isRequired=false,name=''){
         this.isRequired = isRequired;
 
-        if(Request.query[key] !==0){
-            if((!Request.query[key] && isRequired==true)){
-                globalObj.errorRes(100,key+' '+e.getError(100).title,key+' '+e.getError(100).message);
+        if(this.Request.body[key] !==0){
+            if((!this.Request.body[key] && isRequired==true)){
+                if(typeof this.validation.details[key] == 'undefined'){
+                    this.validation.error = this.validation.error+1;
+                    this.validation.details[key]={
+                        code: 100,
+                        title:e.getError(100).title,
+                        message:((name.length>0)?name:key)+' '+e.getError(100).message
+                    }
+                }
+                return this;
             }
         }
 
         this.key = key;
-        this.value = Request.query[key];
-
-        this.typeOfValue = typeof this.value;
-
-        if(typeof this.value=='string'){
-            this.value =this.value.trim();
-        }
-
-        return this;
-    }
-
-    param(key){
-        this.key = key;
-        this.value = Request.params[key];
-
-        this.typeOfValue = typeof this.value;
-
-        if(typeof this.value=='string'){
-            this.value =this.value.trim();
-        }
-        return this;
-    }
-    post(key,isRequired=false){
-        this.isRequired = isRequired;
-
-        if(Request.body[key] !==0){
-            if((!Request.body[key] && isRequired==true)){
-                globalObj.errorRes(100,key+' '+e.getError(100).title,key+' '+e.getError(100).message);
-            }
-        }
-
-        this.key = key;
-        this.value = Request.body[key];
-        this.typeOfValue = typeof Request.body[key];
+        this.value = this.Request.body[key];
+        this.typeOfValue = typeof this.Request.body[key];
 
         if(typeof this.value=='string'){
             this.value =this.value.trim();
@@ -72,6 +62,7 @@ class RequestData {
         return this;
     }
     type(type){
+        let err = 0;
 
         type = type.toLowerCase();
 
@@ -94,42 +85,76 @@ class RequestData {
         if(this.value){
             if(type == 'integer'){
 
-                if(globalObj.isInteger(this.value)==false){
-
-                    globalObj.errorRes(102,globalObj.ucFirst(type)+' '+e.getError(102).title+' for '+ this.key,globalObj.ucFirst(type)+' '+e.getError(102).message+' for '+ this.key);
+                if(isInteger(this.value)==false){
+                    err = 1;
                 }
 
+            }else if(type == 'number'){
+                if(isNumber(this.value)==false){
+                    err = 1;
+                }
+            }else if(type=='email'){
+                if(isEmail(this.value)==false){
+                    err = 1;
+                }
             }else{
 
                 if(this.typeOfValue != type){
-                    globalObj.errorRes(102,globalObj.ucFirst(type)+' '+e.getError(102).title+' for '+ this.key,globalObj.ucFirst(type)+' '+e.getError(102).message+' for '+ this.key);
+                    err = 1;
                 }
             }
         }
-
-        // if((this.typeOfValue!='integer' && typeof this.value != this.typeOfValue) || (this.typeOfValue=='integer' && globalObj.isInteger(this.value)==false)){
-        //     globalObj.errorRes(102,globalObj.ucFirst(this.typeOfValue)+' '+e.getError(102).title+' for '+ this.key,globalObj.ucFirst(this.typeOfValue)+' '+e.getError(102).message+' for '+ this.key);
-        // }
-
-        return this;
-    }
-    required(){
-        if(this.value.length == 0){
-            globalObj.errorRes(100,this.key+' '+e.getError(100).title,this.key+' '+e.getError(100).message);
+        if(err==1){
+            if(typeof this.validation.details[this.key] == 'undefined'){
+                this.validation.error = this.validation.error+1;
+                this.validation.details[this.key]={
+                    code: 102,
+                    title:e.getError(102).title,
+                    message:e.getError(102).message+ucFirst(type)
+                }
+            }
         }
         return this;
     }
     min(value){
 
         if((this.typeOfValue == 'string' && this.value.length < value) || (this.typeOfValue == 'number' && this.value < value)){
-            globalObj.errorRes(103,value+' '+e.getError(103).title+' for '+ this.key,value+' '+e.getError(103).message+' for '+ this.key);
+            if(typeof this.validation.details[this.key] == 'undefined'){
+                this.validation.error = this.validation.error+1;
+                this.validation.details[this.key]={
+                    code: 103,
+                    title:e.getError(103).title,
+                    message:e.getError(103).message+value
+                }
+            }
+
         }
         return this;
     }
-    max(value){
+    maxLength(value){
 
-        if((this.typeOfValue == 'string' && this.value.length < value) || (this.typeOfValue == 'number' && this.value > value)){
-            globalObj.errorRes(104,value+' '+e.getError('104').title+' for '+ this.key,value+' '+e.getError('104').message+' for '+ this.key);
+        if((this.typeOfValue == 'string' && this.value.length >= value)){
+            if(typeof this.validation.details[this.key] == 'undefined'){
+                this.validation.error = this.validation.error+1;
+                this.validation.details[this.key]={
+                    code: 104,
+                    title:e.getError(104).title,
+                    message:e.getError(104).message+' length '+value
+                }
+            }
+        }
+        return this;
+    }
+    maxNumber(value){
+        if((isNumber(this.value) && this.value >= value)){
+            if(typeof this.validation.details[this.key] == 'undefined'){
+                this.validation.error = this.validation.error+1;
+                this.validation.details[this.key]={
+                    code: 104,
+                    title:e.getError(104).title,
+                    message:e.getError(104).message+value
+                }
+            }
         }
         return this;
     }
@@ -140,14 +165,31 @@ class RequestData {
         let match = false;
 
         for(let value in values){
-            if(this.value === values[value]){
+            if(this.value == values[value]){
                 match = true;
                 break;
             }
         }
 
         if(match == true){
-            globalObj.errorRes(120,this.key+' '+e.getError('120').title+' '+ this.value,this.key+' '+e.getError('120').message+' '+ this.value);
+            if(typeof this.validation.details[this.key] == 'undefined'){
+                let mess = '';
+                for(let k in values){
+                    if(k == 0){
+                        mess += values[k];
+                    }else{
+                        mess += ', '+values[k];
+                    }
+
+                }
+                mess+=' are not allowed';
+                this.validation.error = this.validation.error+1;
+                this.validation.details[this.key]={
+                    code: 120,
+                    title:'Invalid Input value',
+                    message:mess
+                }
+            }
         }
         return this;
     }
@@ -157,21 +199,95 @@ class RequestData {
         let match = false;
 
         for(let value in values){
-            if(this.value === values[value]){
+            if(this.value == values[value]){
                 match = true;
                 break;
             }
         }
 
+
         if(match == false){
-            globalObj.errorRes(120,this.key+' '+e.getError('120').title+' '+ this.value,this.key+' '+e.getError('120').message+' '+ this.value);
+            if(typeof this.validation.details[this.key] == 'undefined'){
+                this.validation.error = this.validation.error+1;
+                let mess = '';
+                for(let k in values){
+                    if(k == 0){
+                        mess += values[k];
+                    }else{
+                        mess += ', '+values[k];
+                    }
+
+                }
+                mess+=' are allowed';
+                this.validation.details[this.key]={
+                    code: 120,
+                    title:'Invalid Input value',
+                    message:mess
+                }
+            }
         }
         return this;
     }
+    sameAs(key){
+        let name = ucFirst(key).replace('_',' ');
+        if(this.Request.body[key] !==0){
+            if((!this.Request.body[key])){
+                if(typeof this.validation.details[key] == 'undefined'){
+                    this.validation.error = this.validation.error+1;
+                    this.validation.details[key]={
+                        code: 100,
+                        title:e.getError(100).title,
+                        message:name+' '+e.getError(100).message
+                    }
+                }
+                return this;
+            }
+        }
 
+        if(this.value !== this.Request.body[key]){
+            this.validation.error = this.validation.error+1;
+            this.validation.details[this.key]={
+                code: 130,
+                title:e.getError(130).title,
+                message:e.getError(130).message
+            }
+        }
+        return this;
+    }
+    val(){
+        let val = this.value;
 
+        this.value = '';
+        this.key = '';
+        this.typeOfValue = '';
+        this.isRequired = false;
 
+        return val;
+    }
 
+    validate(){
+        let vs = {...this.validation};
+        this.validation = {
+            error : 0,
+            details:{}
+        };
+        if(vs.error>0){
+            if(this.Request.xhr){
+                vs.header_status = 400;
+                errorRes(vs);
+            }else{
+                let errors = {};
+                for(let k in vs.details){
+                    errors[k] = vs.details[k].message;
+                }
+                this.Request.flash('errors', errors);
+                this.Request.flash('old', this.Request.body);
+                console.log('Request validation ERROR')
+                console.log(errors);
+                this.Response.redirect(this.Request.header('Referer') || '/');
+            }
+        }else{
+            return true;
+        }
+    }
 }
-
-module.exports = new RequestData();

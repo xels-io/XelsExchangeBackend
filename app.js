@@ -37,19 +37,9 @@ app.use(express.static(__dirname+"/assets"));
 
 //Every route middleware
 app.use(function (req, res, next) {
-
-    if(req.protocol === 'http')
-    {
-        res.redirect(301, `https://${req.headers.host}${req.url}`);
-    }
-   else
-   {
-     res.header("Access-Control-Allow-Origin", "*");
-     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, X-Assassin-RequestHash");
-     global.Request = req;
-     global.Response = res;
-     next();
-   }
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, X-Assassin-RequestHash");
+    next();
    
 });
 
@@ -103,15 +93,12 @@ if(globalConfig.https){
 }
 
 
-var server = http.createServer((req, res) => {
-    // console.log(req.headers);
+var server = http.createServer(app);
+ 
+server.listen(httpPort,function () {
     if(globalConfig.https){
         res.writeHead(301,{Location: `https://${req.headers.host}${req.url}`});
     }
-    res.end();
- });
- 
-server.listen(httpPort,function () {
     console.log(`Listening on port(HTTP): ${httpPort}`);
 });
 

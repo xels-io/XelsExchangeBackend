@@ -1,6 +1,6 @@
 class Pagination{
 
-    constructor(totalCount,currentPage,pageUri,perPage=25){
+    constructor(totalCount,currentPage,pageUri,perPage=25,queries){
         this.perPage = perPage;
         this.totalCount =parseInt(totalCount);
         this.currentPage = parseInt(currentPage);
@@ -9,13 +9,13 @@ class Pagination{
         this.pageCount = Math.ceil(this.totalCount / this.perPage);
         pageUri = pageUri+'?';
         let iteration = 1;
-        for (let q in Request.query){
+        for (let q in queries){
 
             if(q!='page'){
                 if(iteration==1){
-                    pageUri += q+'='+Request.query[q];
+                    pageUri += q+'='+queries[q];
                 }else{
-                    pageUri += '&'+q+'='+Request.query[q];
+                    pageUri += '&'+q+'='+queries[q];
                 }
                 iteration++;
             }

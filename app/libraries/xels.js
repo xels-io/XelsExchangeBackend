@@ -54,7 +54,7 @@ module.exports = class exchange extends Controller {
                 'Id': txID
             }
             axios.get(env.baseXels + env.GetApiURL, {params: prm}).then(response => {
-             
+
                 let history = response.data.InnerMsg.history[0].transactionsHistory;
                 let successObj = {
                     "statusCode" : response.status,
@@ -118,8 +118,8 @@ function estimateFee(xels_address)
             resolve(response.data);
         }).catch(error => {
             console.log('ERROR FROM estimateFee()');
-            console.log("estimateFee" +error );
-            reject(error);
+            //console.log("estimateFee" +error );
+            reject(error.response.data);
         });
     });
 }
@@ -143,7 +143,7 @@ function BuildTransaction(xels_address,amount,estimatedfee)
                 resolve(response.data);
             }).catch(error => {
             console.log('ERROR FROM BuildTransaction()');
-            reject(error);
+            reject(error.response.data);
         });
     })
 }

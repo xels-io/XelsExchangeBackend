@@ -7,6 +7,7 @@ require('../system/loader');
 class controller {
 
     constructor() {
+        this.data = {}
     }
 }
 
