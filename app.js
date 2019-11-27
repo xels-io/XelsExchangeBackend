@@ -95,7 +95,7 @@ if(globalConfig.https){
 
 var server = http.createServer(app);
  
-server.listen(httpPort,function () {
+server.listen(httpPort,function (req,res) {
     if(globalConfig.https){
         res.writeHead(301,{Location: `https://${req.headers.host}${req.url}`});
     }
