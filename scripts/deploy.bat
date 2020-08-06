@@ -1,4 +1,5 @@
 cd C:\projects\XelsExchangeBackend
 git pull       
-call npm install --production       
+call npm install --production 
+forever restart app     
 exit

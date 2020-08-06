@@ -10,12 +10,14 @@ pipeline {
     }
     stage('Build') {
       steps {
-        bat label: 'Package Installing', script: 'npm install'
+        sh 'npm install'
       }
     }
     stage('Deploy') {
       steps {
-        bat './scripts/deploy.bat'
+        sshagent(['Build-Server-Pkey']) {
+            sh 'ssh Administrator@13.114.52.87 "C:\\projects\\XelsExchangeBackend\\scripts\\deploy.bat"'
+        }
       }
     }
     
