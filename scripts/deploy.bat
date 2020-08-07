@@ -1,5 +1,5 @@
 cd C:\projects\XelsExchangeBackend
 git pull       
 call npm install --production 
-forever restart app     
+call forever restart app     
 exit
