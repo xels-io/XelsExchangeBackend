@@ -14,8 +14,8 @@ module.exports = class homeController extends Controller {
         let data = {
             xels_address : RequestData.post('xels_address',true).type('string').val(),
             eth_token_amount : RequestData.post('eth_token_amount',true).val(),
-            xels_amount : RequestData.post('xels_amount',true).val()
         };
+        data.xels_amount = parseInt(data.eth_token_amount)*exchange_rate;
         if(RequestData.validate()){
             let Eth_wallet = loadLibrary('addrs/eth');
             Eth_wallet.getWallet().then(wallet=>{
@@ -45,10 +45,13 @@ module.exports = class homeController extends Controller {
         let order_no = RequestData.get('eid');
         if(order_no){
             OrderModel.db.where({order_no}).get(OrderModel.table,function (err,data) {
-                if(data.length>0){
+                if(err){
+                    console.log(err);
+                    Response.render('pages/order',{error:{message:`Something went wrong using databse. Please contact with developer`}});
+                }else if(data.length>0){
                     Response.render('pages/order',{order:data[0]});
                 }else{
-                    Response.render('pages/order',{order:data,error:{message:`"${order_no}" is not found in order list! Please input current exchange id`}});
+                    Response.render('pages/order',{error:{message:`"${order_no}" is not found in order list! Please input current exchange id`}});
                 }
             })
         }else{

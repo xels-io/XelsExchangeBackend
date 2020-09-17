@@ -125,6 +125,8 @@ exports.dbErrorRes = (e) =>{
     globalObj.errorRes(420,customMessage,e.parent.message)
 };
 
+global.exchange_rate = 1/10; //1 sels = 10 xels;
+
 
 
 

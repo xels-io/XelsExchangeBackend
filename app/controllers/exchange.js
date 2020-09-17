@@ -24,7 +24,7 @@ module.exports = class exchange extends Controller {
                         .then(function(balance){
                             if(balance > 0)
                             {
-                                OrderModel.db.update(OrderModel.table,{status:1,xels_amount:balance,eth_token_amount:balance},{'id':rows[row].id},function () {
+                                OrderModel.db.update(OrderModel.table,{status:1,xels_amount:balance*exchange_rate,eth_token_amount:balance},{'id':rows[row].id},function () {
                                     if(err){
                                         console.log(err);
                                     }else{
