@@ -1,8 +1,8 @@
 $(document).ready(function()
 {
-    $(document).on("change, keyup , mouseup", "#eth_token_amount", function()
+    $(document).on("change, keyup , mouseup", "#deposit_amount", function()
     {
-        var sels = parseFloat($("#eth_token_amount").val());
+        var sels = parseFloat($("#deposit_amount").val());
         var xels_token = sels*0.1;
 
         $("#xels_amount").val(xels_token);

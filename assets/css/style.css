@@ -238,3 +238,12 @@ body{
         font-size: 28px;
     }
 }
+
+.custom-select{
+    height: 100%;
+}
+.custom-select:focus{
+    outline: 0;
+    box-shadow: none;
+    border: 1px solid #6DD162;
+}

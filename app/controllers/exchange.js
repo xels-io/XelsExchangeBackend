@@ -2,7 +2,9 @@
 const Controller = loadCore('controller');
 
 const OrderModel = loadModel('OrderModel');
-const tokenContract = loadLibrary('tokenContract');
+const Token = loadLibrary('Token');
+const tokens = loadConfig('tokens');
+
 const Xels = loadLibrary('xels');
 const xels = new Xels();
 
@@ -14,17 +16,24 @@ module.exports = class exchange extends Controller {
 
 
     received(){
-        let rows = OrderModel.db.where({'status':0}).get(OrderModel.table,function (err,rows) {
+        let rows = OrderModel.db.where({'status':0}).get(OrderModel.table,async function (err,rows) {
             if(err){
                 console.log(err)
             }else{
-                console.log('Found Orders for Checking Balance');
+                console.log('Found '+rows.length+' Orders for Checking Balance');
+                
                 for(let row in rows){
-                    tokenContract.getBalance(rows[row].eth_address )
-                        .then(function(balance){
-                            if(balance > 0)
+                    let ctoken = (globalConfig.cryptoNetwork=='mainnet')?tokens[rows[row].deposit_symbol]:tokens['TEST'];
+                    let tokenContract = new Token(
+                            ctoken.contract,
+                            ctoken.abi,
+                            globalConfig.cryptoNetwork
+                        );
+                    try{
+                        let balance = await tokenContract.getBalance(rows[row].deposit_address);
+                        if(balance > 0)
                             {
-                                OrderModel.db.update(OrderModel.table,{status:1,xels_amount:balance*exchange_rate,eth_token_amount:balance},{'id':rows[row].id},function () {
+                                OrderModel.db.update(OrderModel.table,{status:1,xels_amount:balance*exchange_rate,deposit_amount:balance},{'id':rows[row].id},function () {
                                     if(err){
                                         console.log(err);
                                     }else{
@@ -32,19 +41,21 @@ module.exports = class exchange extends Controller {
                                     }
                                 })
                             }
-                        });
+                    }catch(err){
+                        console.log('Error get '+rows[row].deposit_symbol+' balance of '+rows[row].deposit_address)
+                    }
                 }
             }
         })
     }
     sendXels(){
-        let rows = OrderModel.db.where({'status':1}).get(OrderModel.table,function (err,rows) {
+        let rows = OrderModel.db.where({'status':1}).get(OrderModel.table,async function (err,rows) {
             if(err){
                 console.log(err)
             }else if(rows.length>0){
                 console.log('Found Orders for Sending Xels');
                 for(let row in rows){
-                    xels.send(rows[row]);
+                    await xels.send(rows[row]);
                 }
             }
         })

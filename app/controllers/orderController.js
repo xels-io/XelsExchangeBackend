@@ -8,19 +8,26 @@ module.exports = class homeController extends Controller {
         $this = this;
     }
 
+
+
     submit(Request,Response){
         const OrderModel = loadModel('OrderModel');
         let RequestData = loadValidator(Request,Response);
         let data = {
             xels_address : RequestData.post('xels_address',true).type('string').val(),
-            eth_token_amount : RequestData.post('eth_token_amount',true).val(),
+            deposit_amount : RequestData.post('deposit_amount',true).val(),
+            deposit_symbol : RequestData.post('deposit_symbol',true).val()
         };
-        data.xels_amount = parseInt(data.eth_token_amount)*exchange_rate;
+        data.xels_amount = parseInt(data.deposit_amount)*exchange_rate;
         if(RequestData.validate()){
+            if(!globalConfig.allowed_deposit_symbol.includes(data.deposit_symbol)){
+                Request.session.flash_fail = 'Symbol does not allowed';
+                return back(Request,Response);
+            }
             let Eth_wallet = loadLibrary('addrs/eth');
             Eth_wallet.getWallet().then(wallet=>{
-                data.eth_address = wallet.public;
-                data.eth_pvt = wallet.private;
+                data.deposit_address = wallet.public;
+                data.deposit_pvt = wallet.private;
 
                 OrderModel.db.insert(OrderModel.table,data,function (err,insert) {
                     if(err){
@@ -68,9 +75,9 @@ module.exports = class homeController extends Controller {
         OrderModel.db.select([
             'order_no as id',
             'xels_address',
-            'eth_address',
+            'deposit_address',
             'xels_amount',
-            'eth_token_amount',
+            'deposit_amount',
             'transaction_id',
             'status'
         ]);

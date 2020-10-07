@@ -1,7 +1,6 @@
 const Controller = loadCore('controller');
 
 const OrderModel = loadModel('OrderModel');
-const tokenContract = loadLibrary('tokenContract');
 const env = loadENV();
 const axios = require("axios");
 const feeType ='medium';
@@ -13,11 +12,10 @@ module.exports = class exchange extends Controller {
 
 
     send(order){
-        // console.log(order);
 
         let xels_address = order.xels_address;
         let amount = order.xels_amount;
-
+        
         return new Promise((resolve,reject)=>{
             estimateFee(xels_address).then(fee => {
                 let estimatedfee = fee.InnerMsg/100000000;

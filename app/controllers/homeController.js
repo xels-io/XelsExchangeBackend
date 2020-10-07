@@ -10,8 +10,10 @@ module.exports = class homeController extends Controller {
     }
 
     index(Request,Response){
-        $this.data.Request = Request;
-        Response.render('pages/index',$this.data);
+        let data = {
+            Request : Request
+        }
+        Response.render('pages/index',data);
     }
 }
 

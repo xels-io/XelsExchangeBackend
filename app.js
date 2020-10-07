@@ -104,6 +104,9 @@ var server = http.createServer(app);
  
 server.listen(httpPort,function (req,res) {
     console.log(`Listening on port(HTTP): ${httpPort}`);
+    const Exchange = require('./app/controllers/exchange');
+    const exchange = new Exchange();
+    exchange.received();
 });
 
 

@@ -1,6 +1,6 @@
 global.globalObj = require('../config/global');
 global.globalConst = require('../config/constants');
-global.globalConfig = require('../config/config');
+global.globalConfig = require('../env');
 
 path = require('path');
 flash = require('express-flash');

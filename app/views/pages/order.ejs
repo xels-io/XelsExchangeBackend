@@ -10,8 +10,8 @@
             <div class="row">
                 <div class="col-lg-6 col-md-12">
                     <div class="diposit address-block" deposit_currency="BCH" deposit_address="1LGDhwfwJ5hbf1NcSmHN4PLvuPNrCzjzBL" st="1" rc="P69SBITCXDL8184">
-                        <p class="order-highlight">Deposit <%- order.eth_token_amount %> SELS TOKEN</p>
-                        <p class="address"><%- order.eth_address %></p>
+                        <p class="order-highlight">Deposit <%- order.deposit_amount %> <%- order.deposit_symbol %> TOKEN</p>
+                        <p class="address"><%- order.deposit_address %></p>
                     </div>
                 </div>
                 <div class="col-lg-6 col-md-12">
@@ -25,14 +25,14 @@
         <div class="">
             <div class="row">
                 <div class="col-md-3 center eq-height barcode">
-                    <img src="https://chart.googleapis.com/chart?cht=qr&amp;chs=300x300&amp;chl=ethereum%3A<%- order.eth_address %>%3Famount%3D<%- order.eth_token_amount %>&amp;choe=UTF-8&amp;chld=L|4">
+                    <img src="https://chart.googleapis.com/chart?cht=qr&amp;chs=300x300&amp;chl=ethereum%3A<%- order.deposit_address %>%3Famount%3D<%- order.deposit_amount %>&amp;choe=UTF-8&amp;chld=L|4">
                 </div>
                 <div class="col-md-9 eq-height">
 
                     <div class="send copy">
                         <h3 class="exchange-id"><b>Exchange ID: <span id="orderno"><%- order.order_no %></span></b></h3>
-                        <p>Send <b class="order-highlight"><%- order.eth_token_amount %> SELS</b> to the address </p>
-                        <p class="address order-highlight m-0"><b id="copy-text"><%- order.eth_address %></b></p>
+                        <p>Send <b class="order-highlight"><%- order.deposit_amount %> SELS</b> to the address </p>
+                        <p class="address order-highlight m-0"><b id="copy-text"><%- order.deposit_address %></b></p>
 
                         <div>
                             <span class="btn btn-success btn-copy mt-2" data-toggle="tooltip" data-copy="#copy-text" data-placement="right" title="" data-original-title="Copy to clipboard">Copy the address</span>

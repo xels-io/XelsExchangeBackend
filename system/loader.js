@@ -65,3 +65,7 @@ loadValidator = (req,res) =>{
     return new validator(req,res);
 };
 
+back = (req,res) =>{
+    return res.redirect(req.header('Referer') || '/');
+}
+
