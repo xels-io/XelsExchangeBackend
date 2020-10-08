@@ -87,7 +87,7 @@
     $(function () {
         var host = window.location.origin;
         setInterval(function(){
-            $.get(host+'/api/v1/getOrder/'+$('#orderno').text(),function (order) {
+            $.get(host+'/api/getOrder/'+$('#orderno').text(),function (order) {
                 $('.status').addClass('hide');
                 $('.status-'+order.status).removeClass('hide');
             },'json')

@@ -272,9 +272,9 @@ module.exports = class RequestData {
             details:{}
         };
         if(vs.error>0){
-            if(this.Request.xhr){
-                vs.header_status = 400;
-                errorRes(vs);
+            if(this.Request.xhr || this.Request.originalUrl.includes('/api/')){
+                vs.err_code = 'INVALID_REQUEST_DATA';
+                return this.Response.status(400).send(vs);
             }else{
                 let errors = {};
                 for(let k in vs.details){

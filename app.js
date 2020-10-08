@@ -55,7 +55,7 @@ app.use(function (req, res, next) {
     Routes
 */
 
-app.use('/api/v1', ApiRoute); //route prefix(api/v1) is added
+app.use('/api', ApiRoute); //route prefix(api/v1) is added
 app.use('/',WebRoute);
 
 //Didn't match any route then it'll be executed

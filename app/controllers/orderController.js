@@ -11,6 +11,7 @@ module.exports = class homeController extends Controller {
 
 
     submit(Request,Response){
+        
         const OrderModel = loadModel('OrderModel');
         let RequestData = loadValidator(Request,Response);
         let data = {
@@ -21,6 +22,9 @@ module.exports = class homeController extends Controller {
         data.xels_amount = parseInt(data.deposit_amount)*exchange_rate;
         if(RequestData.validate()){
             if(!globalConfig.allowed_deposit_symbol.includes(data.deposit_symbol)){
+                if(Request.originalUrl.includes('/api/')){
+                    return Response.status(500).send({error:1,err_code:'NOT_FOUND',message:'Symbol does not allowed'}); 
+                }
                 Request.session.flash_fail = 'Symbol does not allowed';
                 return back(Request,Response);
             }
@@ -31,12 +35,19 @@ module.exports = class homeController extends Controller {
 
                 OrderModel.db.insert(OrderModel.table,data,function (err,insert) {
                     if(err){
-                        Response.send(err);
+                        console.log(err)
+                        return Response.status(500).send({error:1,err_code:'SERVER_ERROR',message:'Something went wrong using databse. Please contact with developer!'}); 
                     }else{
                         let random = require("randomstring");
                         let order_no = random.generate(7)+insert.insertId;
-                        OrderModel.db.update(OrderModel.table,{order_no},{id:insert.insertId},function (err,update) {
-                            Response.redirect('/track?eid='+order_no);
+                        OrderModel.db.update(OrderModel.table,{order_no},{id:insert.insertId},async function (err,update) {
+
+                            if(Request.originalUrl.includes('/api/')){
+                                let order = await OrderModel.getOrder(order_no);
+                                Response.send(order[0])
+                            }else{
+                                Response.redirect('/track?eid='+order_no);
+                            }
                         })
                     }
 
@@ -45,7 +56,6 @@ module.exports = class homeController extends Controller {
         }
 
     }
-
     order(Request,Response){
         const OrderModel = loadModel('OrderModel');
         let RequestData = loadValidator(Request,Request);
@@ -64,26 +74,35 @@ module.exports = class homeController extends Controller {
         }else{
             Response.render('pages/order');
         }
+    }
+    //same as order(Request,Response)
+    orderApi(Request,Response){
 
-
+        const OrderModel = loadModel('OrderModel');
+        let RequestData = loadValidator(Request,Request);
+        let order_no = RequestData.get('eid');
+        OrderModel.getOrder(order_no).then(data=>{
+            if(data.length>0){
+                Response.send(data[0])
+            }else{
+                Response.status(500).send({error:1,err_code:'NOT_FOUND',message:`${order_no} is not found in order list! Please input current exchange id`}); 
+            }
+        }).catch(err=>{
+            console.log(err)
+            return Response.status(500).send({error:1,err_code:'SERVER_ERROR',message:'Something went wrong using databse. Please contact with developer!'}); 
+        })
     }
 
     //public api response
     getOrder(Request,Response){
-        let RequestData = loadValidator(Request,Response);
+        let order_no = Request.params['order_no'];
         const OrderModel = loadModel('OrderModel');
-        OrderModel.db.select([
-            'order_no as id',
-            'xels_address',
-            'deposit_address',
-            'xels_amount',
-            'deposit_amount',
-            'transaction_id',
-            'status'
-        ]);
-        OrderModel.db.where({'order_no':RequestData.params('order_no')}).get(OrderModel.table,function (err,data) {
-            Response.send(data[0]);
+        OrderModel.getOrder(order_no).then(data=>{
+            Response.send(data);
+        }).catch(err=>{
+            return Response.status(500).send({error:1,err_code:'SERVER_ERROR',message:'Something went wrong using databse. Please contact with developer!'});
         })
+        
     }
 
 }

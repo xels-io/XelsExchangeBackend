@@ -10,7 +10,9 @@ const auth = loadMiddleware('auth');
  NB: write controllerName without Controller and .js.
 */
 
+route.post('/new-order',controller('order/submit'));
 route.get('/getOrder/:order_no',controller('order/getOrder'));
+route.get('/track',controller('order/orderApi'));
 
 /*
  //@finished all routes here
