@@ -4,8 +4,9 @@ module.exports = (req,res,next) => {
     if (!req.session.user) {
         if(req.xhr){
             res.send({
-                'status':false,
-                'msg':'Login required'
+                'error':1,
+                'err_code':'AUTH_FAILURE',
+                'msg':'Authentication Failure'
             })
         }
         res.redirect('/login');
