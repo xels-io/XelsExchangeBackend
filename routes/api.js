@@ -12,6 +12,7 @@ const api_auth = loadMiddleware('api_auth');
 
 route.post('/new-order',api_auth,controller('order/submit'));
 route.get('/getOrder/:order_no',controller('order/getOrder'));
+route.post('/getOrders',controller('order/getOrders'));
 route.get('/track',api_auth,controller('order/orderApi'));
 
 /*

@@ -1,5 +1,6 @@
 const Controller = loadCore('controller');
 let $this;
+let UserModel = loadModel('UserModel')
 
 module.exports = class homeController extends Controller {
 
@@ -11,6 +12,8 @@ module.exports = class homeController extends Controller {
 
 
     submit(Request,Response){
+
+        let isApiRequest = Request.originalUrl.includes('/api/');
         
         const OrderModel = loadModel('OrderModel');
         let RequestData = loadValidator(Request,Response);
@@ -19,19 +22,28 @@ module.exports = class homeController extends Controller {
             deposit_amount : RequestData.post('deposit_amount',true).val(),
             deposit_symbol : RequestData.post('deposit_symbol',true).val()
         };
+
+        if(isApiRequest){
+            var user_code = RequestData.post('user_code',true).type('string').val()
+        }
         data.xels_amount = parseInt(data.deposit_amount)*exchange_rate;
         if(RequestData.validate()){
             if(!globalConfig.allowed_deposit_symbol.includes(data.deposit_symbol)){
-                if(Request.originalUrl.includes('/api/')){
+                if(isApiRequest){
                     return Response.status(500).send({error:1,err_code:'NOT_FOUND',message:'Symbol does not allowed'}); 
                 }
                 Request.session.flash_fail = 'Symbol does not allowed';
                 return back(Request,Response);
             }
             let Eth_wallet = loadLibrary('addrs/eth');
-            Eth_wallet.getWallet().then(wallet=>{
+            Eth_wallet.getWallet().then(async wallet=>{
                 data.deposit_address = wallet.public;
                 data.deposit_pvt = wallet.private;
+
+                if(isApiRequest){
+                    let user = await UserModel.findOrCreate({user_code})
+                    data.user_id = user.id;
+                }
 
                 OrderModel.db.insert(OrderModel.table,data,function (err,insert) {
                     if(err){
@@ -102,6 +114,27 @@ module.exports = class homeController extends Controller {
         }).catch(err=>{
             return Response.status(500).send({error:1,err_code:'SERVER_ERROR',message:'Something went wrong using databse. Please contact with developer!'});
         })
+        
+    }
+
+    //public api response
+    getOrders(Request,Response){
+        let RequestData = loadValidator(Request,Response);
+        let user_code = RequestData.post('user_code',true,'User Code').val();
+        if(RequestData.validate()){
+            UserModel.db.where(`user_code = '${user_code}'`).get(UserModel.table,(err,users)=>{
+                if(err){
+                    return Response.status(500).send({error:1,err_code:'SERVER_ERROR',message:'Something went wrong using databse. Please contact with developer!'});
+                }else{
+                    const OrderModel = loadModel('OrderModel');
+                    OrderModel.getOrders(users[0].id).then(data=>{
+                        Response.send(data);
+                    }).catch(err=>{
+                        return Response.status(500).send({error:1,err_code:'SERVER_ERROR',message:'Something went wrong using databse. Please contact with developer!'});
+                    })
+                }
+            })
+        }
         
     }
 
