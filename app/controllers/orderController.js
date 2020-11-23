@@ -110,7 +110,12 @@ module.exports = class homeController extends Controller {
         let order_no = Request.params['order_no'];
         const OrderModel = loadModel('OrderModel');
         OrderModel.getOrder(order_no).then(data=>{
-            Response.send(data);
+            if(data.length>0){
+                Response.send(data[0]);
+            }else{
+                Response.send({})
+            }
+            
         }).catch(err=>{
             return Response.status(500).send({error:1,err_code:'SERVER_ERROR',message:'Something went wrong using databse. Please contact with developer!'});
         })
@@ -125,13 +130,15 @@ module.exports = class homeController extends Controller {
             UserModel.db.where(`user_code = '${user_code}'`).get(UserModel.table,(err,users)=>{
                 if(err){
                     return Response.status(500).send({error:1,err_code:'SERVER_ERROR',message:'Something went wrong using databse. Please contact with developer!'});
-                }else{
+                }else if(users.length>0){
                     const OrderModel = loadModel('OrderModel');
                     OrderModel.getOrders(users[0].id).then(data=>{
                         Response.send(data);
                     }).catch(err=>{
                         return Response.status(500).send({error:1,err_code:'SERVER_ERROR',message:'Something went wrong using databse. Please contact with developer!'});
                     })
+                }else{
+                    Response.send([]);
                 }
             })
         }
