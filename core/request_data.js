@@ -274,7 +274,8 @@ module.exports = class RequestData {
         if(vs.error>0){
             if(this.Request.xhr || this.Request.originalUrl.includes('/api/')){
                 vs.err_code = 'INVALID_REQUEST_DATA';
-                return this.Response.status(400).send(vs);
+                this.Response.status(400).send(vs);
+                return false;
             }else{
                 let errors = {};
                 for(let k in vs.details){
@@ -285,6 +286,7 @@ module.exports = class RequestData {
                 console.log('Request validation ERROR')
                 console.log(errors);
                 this.Response.redirect(this.Request.header('Referer') || '/');
+                return false;
             }
         }else{
             return true;

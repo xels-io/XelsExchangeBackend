@@ -30,7 +30,8 @@ module.exports = class homeController extends Controller {
         if(RequestData.validate()){
             if(!globalConfig.allowed_deposit_symbol.includes(data.deposit_symbol)){
                 if(isApiRequest){
-                    return Response.status(500).send({error:1,err_code:'NOT_FOUND',message:'Symbol does not allowed'}); 
+                    Response.status(500).send({error:1,err_code:'NOT_FOUND',message:'Symbol does not allowed'});
+                    return; 
                 }
                 Request.session.flash_fail = 'Symbol does not allowed';
                 return back(Request,Response);
