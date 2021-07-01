@@ -116,6 +116,21 @@ module.exports = class RequestData {
         }
         return this;
     }
+    pattern(regEx){
+        console.log(regEx.test(this.value))
+        if((this.typeOfValue != '' && !regEx.test(this.value))){
+            if(typeof this.validation.details[this.key] == 'undefined'){
+                this.validation.error = this.validation.error+1;
+                this.validation.details[this.key]={
+                    code: 103,
+                    title:e.getError(123).title,
+                    message:e.getError(123).message
+                }
+            }
+
+        }
+        return this;
+    }
     min(value){
 
         if((this.typeOfValue == 'string' && this.value.length < value) || (this.typeOfValue == 'number' && this.value < value)){

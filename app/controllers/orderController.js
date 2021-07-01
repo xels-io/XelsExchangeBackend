@@ -18,7 +18,7 @@ module.exports = class homeController extends Controller {
         const OrderModel = loadModel('OrderModel');
         let RequestData = loadValidator(Request,Response);
         let data = {
-            xels_address : RequestData.post('xels_address',true).type('string').val(),
+            xels_address : RequestData.post('xels_address',true).type('string').pattern(/[Xx]{1}[a-km-zA-HJ-NP-Z1-9]{26}/).val(),
             deposit_amount : RequestData.post('deposit_amount',true).val(),
             deposit_symbol : RequestData.post('deposit_symbol',true).val()
         };

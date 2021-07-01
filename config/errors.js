@@ -59,6 +59,12 @@ errors[120] = {
     title:'does not allow input value',
     message : 'does not allow input value'
 };
+
+errors[123] = {
+    header_status:401,
+    title:'Invalid Address',
+    message : 'Your Provided address is invalid'
+};
 errors[500] = {
     header_status:500,
     title:'Internal Server Error',
